@@ -56,7 +56,33 @@ export async function memoriesRoutes(app: FastifyInstance) {
     return memory
   })
 
-  app.put('/memories/:id', async () => {})
+  app.put('/memories/:id', async (request) => {
+    const paramsSchema = z.object({
+      id: z.string().uuid(),
+    })
+
+    const bodySchema = z.object({
+      content: z.string(),
+      coverUrl: z.string(),
+      isPublic: z.coerce.boolean().default(false),
+    })
+
+    const { content, coverUrl, isPublic } = bodySchema.parse(request.body)
+    const { id } = paramsSchema.parse(request.params)
+
+    const memory = await prisma.memory.update({
+      where: {
+        id,
+      },
+      data: {
+        content,
+        coverUrl,
+        isPublic,
+      },
+    })
+
+    return memory
+  })
 
   app.delete('/memories/:id', async (request) => {
     const paramsSchema = z.object({
